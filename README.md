@@ -4,7 +4,7 @@ A real-time lead notification dashboard that receives Meta Lead Ads webhook even
 
 ## Architecture
 
-![Meta Lead Handler Architecture](docs/architecture.png)
+![Meta Lead Handler Architecture](/architecture.png)
 
 **Data flow:**
 
@@ -61,8 +61,8 @@ MetaLeadHandler/
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repository-url>
-cd MetaLeadHandler
+git clone https://github.com/dishitasaxenaa/Meta-Lead-Handler.git
+cd Meta-Lead-Handler
 ```
 
 ### 2. Configure the backend
@@ -79,8 +79,6 @@ PORT=5001
 META_VERIFY_TOKEN=your_custom_verify_token
 NGROK_AUTHTOKEN=your_ngrok_auth_token
 ```
-
-Keep these values private. Never commit `.env` to Git.
 
 ### 3. Start the backend
 
@@ -147,12 +145,8 @@ In the Meta Developer Dashboard:
 
 ## Future Improvements
 
-- Integrate PostgreSQL for persistent lead storage.
+- Integrate a database (like PostgreSQL) for persistent lead storage.
 - Fetch complete lead details through the Meta Graph API.
 - Implement duplicate detection and error handling.
 - Deploy the backend to a hosted environment.
 - Add authentication and access controls.
-
-## License
-
-Add a license if you intend to distribute or open-source this project.
