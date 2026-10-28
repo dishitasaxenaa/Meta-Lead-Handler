@@ -1,50 +1,159 @@
-# Welcome to your Expo app 👋
+# Meta Lead Handler
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A real-time lead notification dashboard that receives Meta Lead Ads webhook events and displays incoming leads in a React Native app using Socket.IO.
 
-## Get started
+## Architecture
 
-1. Install dependencies
+![Meta Lead Handler Architecture](docs/architecture.png)
 
-   ```bash
-   npm install
-   ```
+**Data flow:**
 
-2. Start the app
+1. A test lead is created through Meta's Lead Ads Testing Tool or submitted through a Facebook Instant Form.
+2. Meta sends a webhook notification to the backend's public HTTPS endpoint.
+3. Ngrok forwards the request to the locally running Express server.
+4. The backend processes the `leadgen` event and stores lead metadata in memory.
+5. Socket.IO broadcasts the new lead to connected clients.
+6. The Expo dashboard updates automatically without requiring a manual refresh.
 
-   ```bash
-   npx expo start
-   ```
+## Tech Stack
 
-In the output, you'll find options to open the app in a
+**Frontend**
+- React Native
+- Expo
+- TypeScript
+- NativeWind
+- Socket.IO Client
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+**Backend**
+- Node.js
+- Express.js
+- Socket.IO
+- Meta Webhooks
+- Ngrok
+- In-memory storage
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Project Structure
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```text
+MetaLeadHandler/
+├── backend/
+│   ├── server.js
+│   ├── package.json
+│   └── .env
+├── frontend/
+│   ├── app/
+│   │   └── index.tsx
+│   └── package.json
+├── docs/
+│   └── architecture.png
+├── .gitignore
+└── README.md
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Prerequisites
 
-## Learn more
+- Node.js and npm
+- Expo Go or an Android emulator
+- A Meta Developer account and Facebook Page
+- Ngrok account and authentication token
 
-To learn more about developing your project with Expo, look at the following resources:
+## Getting Started
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 1. Clone the repository
 
-## Join the community
+```bash
+git clone <your-repository-url>
+cd MetaLeadHandler
+```
 
-Join our community of developers creating universal apps.
+### 2. Configure the backend
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file inside `backend/`:
+
+```env
+PORT=5001
+META_VERIFY_TOKEN=your_custom_verify_token
+NGROK_AUTHTOKEN=your_ngrok_auth_token
+```
+
+Keep these values private. Never commit `.env` to Git.
+
+### 3. Start the backend
+
+```bash
+npm run dev
+```
+
+The Express server runs on port `5001`. If ngrok is started programmatically by the backend, it should also expose the server through a public HTTPS URL.
+
+### 4. Start the frontend
+
+Open a second terminal:
+
+```bash
+cd frontend
+npm install
+npx expo start
+```
+
+Open the app in Expo Go or an Android emulator.
+
+For a physical Android device, configure the frontend to use your Mac's local IP address for the backend connection. The device and Mac should be on the same Wi-Fi network.
+
+### 5. Configure Meta Webhooks
+
+In the Meta Developer Dashboard:
+
+1. Open your app and configure the **Page** webhook object.
+2. Set the callback URL to your public ngrok URL followed by `/webhook`.
+3. Enter the same verification token configured in `backend/.env`.
+4. Subscribe to the `leadgen` field.
+5. Subscribe your Facebook Page to the app for lead notifications.
+
+### 6. Test the integration
+
+1. Keep the backend, ngrok tunnel, and Expo app running.
+2. Open the [Meta Lead Ads Testing Tool](https://developers.facebook.com/tools/lead-ads-testing).
+3. Select your Page and test form, then create a test lead.
+4. Check the backend terminal for the incoming notification.
+5. Confirm that the lead appears in the Expo dashboard without refreshing.
+
+## API Endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/` | Health check |
+| GET | `/webhook` | Meta webhook verification |
+| POST | `/webhook` | Receive lead notifications |
+| GET | `/leads` | Retrieve stored lead metadata |
+
+## Socket.IO Events
+
+| Event | Direction | Purpose |
+|---|---|---|
+| `initial-leads` | Backend → Frontend | Sends existing leads when a client connects |
+| `new-lead` | Backend → Frontend | Broadcasts a newly received lead |
+
+## Current Limitations
+
+- **In-memory storage:** Leads are lost when the backend restarts.
+- **Lead metadata:** Webhook notifications contain identifiers and metadata; retrieving actual form answers requires a separate Meta Graph API request and appropriate permissions.
+- **Duplicate handling:** Production use should deduplicate notifications using `leadgen_id`.
+- **Local development:** Ngrok and a local server are suitable for testing, but reliable production use requires a deployed backend and persistent storage.
+
+## Future Improvements
+
+- Integrate PostgreSQL for persistent lead storage.
+- Fetch complete lead details through the Meta Graph API.
+- Implement duplicate detection and error handling.
+- Deploy the backend to a hosted environment.
+- Add authentication and access controls.
+
+## License
+
+Add a license if you intend to distribute or open-source this project.
