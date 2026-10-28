@@ -44,8 +44,7 @@ MetaLeadHandler/
 │   ├── app/
 │   │   └── index.tsx
 │   └── package.json
-├── docs/
-│   └── architecture.png
+├── architecture.png
 ├── .gitignore
 └── README.md
 ```
